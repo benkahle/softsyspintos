@@ -40,8 +40,8 @@ returns 1 if a is before b
 */
 int waiting_sort(SL_elem *a, SL_elem *b) {
   printf("<Checking Values (sort)>\n");
-  int a_done = ((Waiting_thread *)a->data)->length - ((Waiting_thread *)a->data)->start;
-  int b_done = ((Waiting_thread *)b->data)->length - ((Waiting_thread *)b->data)->start;
+  int a_done = ((Waiting_thread *)a->data)->length + ((Waiting_thread *)a->data)->start;
+  int b_done = ((Waiting_thread *)b->data)->length + ((Waiting_thread *)b->data)->start;
   if (a_done < b_done) {
     return 1;
   } else {
