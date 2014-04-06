@@ -1,0 +1,4 @@
+src/threads/Make.vars
+src/utils/pintos
+src/utils/pintos-gdb
+
