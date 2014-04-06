@@ -14,7 +14,7 @@ typedef int sl_sort_func(SL_elem *a, SL_elem *b);
 
 SL_elem* sl_new_elem(void *data);
 void sl_list_push(SL_elem*, void*);
-SL_elem* sl_list_pop(SL_elem*);
+void* sl_list_pop(SL_elem*);
 int sl_insert_sorted(SL_elem *start, void *insert, sl_sort_func *before);
 
 

@@ -21,8 +21,9 @@ void* sl_list_pop(SL_elem *start) {
   if (start->next) {
     start = start->next;
   }
-  free(&start);
-  return (void*)first;
+  void *data = first->data;
+  free(first);
+  return data;
 }
 
 /*
