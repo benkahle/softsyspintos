@@ -122,6 +122,7 @@ timer_sleep (int64_t ticks)
   printf("Made waiting thread\n");
   sl_insert_sorted(waiting_list.start, waiting, (sl_sort_func *) waiting_sort);
   printf("Saved waiting thread\n");
+  printf("List start: %p\n", waiting_list.start);
   //while (timer_elapsed (start) < ticks) 
   //  thread_yield ();
 
@@ -202,21 +203,21 @@ static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
-  thread_tick ();
   Waiting_thread *waiting = (Waiting_thread *) waiting_list.start;
   if (waiting) {
     printf("<Waiting Thread> %p\n", waiting);
   }
   if (waiting) {
     printf("<Waiting Thread Found>\n");
-    intr_disable();
     if (timer_elapsed(waiting->start) >= waiting->length) {
       sema_up(waiting->t->sleep_sema);
+      intr_disable();
       sl_list_pop(waiting_list.start);
+      intr_enable();
       printf("--> <2> Waking Up: %p", waiting->t);
     } 
-    intr_enable();
   }
+  thread_tick ();
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
