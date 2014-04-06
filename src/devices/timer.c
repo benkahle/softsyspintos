@@ -204,7 +204,9 @@ timer_interrupt (struct intr_frame *args UNUSED)
   ticks++;
   thread_tick ();
   Waiting_thread *waiting = (Waiting_thread *) waiting_list.start;
-  printf("<Waiting Thread> %p\n", waiting);
+  if (waiting) {
+    printf("<Waiting Thread> %p\n", waiting);
+  }
   if (waiting) {
     printf("<Waiting Thread Found>\n");
     intr_disable();

@@ -17,10 +17,11 @@ void sl_list_push(SL_elem *start, void *data) {
 }
 
 SL_elem* sl_list_pop(SL_elem *start) {
+  SL_elem *first = start;
   if (start->next) {
     start = start->next;
   }
-  return start;
+  return first;
 }
 
 /*
