@@ -7,7 +7,9 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
-  
+#include "threads/malloc.h"
+#include <easylist.h>  
+
 /* See [8254] for hardware details of the 8254 timer chip. */
 
 #if TIMER_FREQ < 19
@@ -30,6 +32,23 @@ static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
 
+SL_list waiting_list;
+
+/*
+returns 1 if a is before b
+0 otherwise
+*/
+int waiting_sort(SL_elem *a, SL_elem *b) {
+  printf("<Checking Values (sort)>\n");
+  int a_done = ((Waiting_thread *)a->data)->length - ((Waiting_thread *)a->data)->start;
+  int b_done = ((Waiting_thread *)b->data)->length - ((Waiting_thread *)b->data)->start;
+  if (a_done < b_done) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 /* Sets up the timer to interrupt TIMER_FREQ times per second,
    and registers the corresponding interrupt. */
 void
@@ -37,6 +56,7 @@ timer_init (void)
 {
   pit_configure_channel (0, 2, TIMER_FREQ);
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
+  waiting_list.start = NULL;
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -92,8 +112,19 @@ timer_sleep (int64_t ticks)
   int64_t start = timer_ticks ();
 
   ASSERT (intr_get_level () == INTR_ON);
-  while (timer_elapsed (start) < ticks) 
-    thread_yield ();
+  struct thread *t = thread_current();
+  printf("--> <1> Sleeping: %p\n", t);
+  sema_down(t->sleep_sema);
+  Waiting_thread *waiting = malloc(sizeof(Waiting_thread));
+  waiting->t = t;
+  waiting->start = start;
+  waiting->length = ticks; 
+  printf("Made waiting thread\n");
+  sl_insert_sorted(waiting_list.start, waiting, (sl_sort_func *) waiting_sort);
+  printf("Saved waiting thread\n");
+  //while (timer_elapsed (start) < ticks) 
+  //  thread_yield ();
+
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -172,6 +203,18 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+  Waiting_thread *waiting = (Waiting_thread *) waiting_list.start;
+  printf("<Waiting Thread> %p\n", waiting);
+  if (waiting) {
+    printf("<Waiting Thread Found>\n");
+    intr_disable();
+    if (timer_elapsed(waiting->start) >= waiting->length) {
+      sema_up(waiting->t->sleep_sema);
+      sl_list_pop(waiting_list.start);
+      printf("--> <2> Waking Up: %p", waiting->t);
+    } 
+    intr_enable();
+  }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

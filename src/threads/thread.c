@@ -9,8 +9,9 @@
 #include "threads/intr-stubs.h"
 #include "threads/palloc.h"
 #include "threads/switch.h"
-#include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "threads/synch.h"
+#include "synch.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -463,6 +464,10 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+
+  /* Allocate sleep semaphore and init to 1*/
+  t->sleep_sema = (struct semaphore*) alloc_frame(t, sizeof t->sleep_sema);
+  sema_init(t->sleep_sema, 1);
 
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);

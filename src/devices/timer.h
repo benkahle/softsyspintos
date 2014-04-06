@@ -3,10 +3,18 @@
 
 #include <round.h>
 #include <stdint.h>
+#include <easylist.h>
 
 /* Number of timer interrupts per second. */
 #define TIMER_FREQ 100
 
+typedef struct {
+  struct thread *t;
+  int64_t start;
+  int64_t length;
+} Waiting_thread;
+
+int waiting_sort(SL_elem *a, SL_elem *b);
 void timer_init (void);
 void timer_calibrate (void);
 
