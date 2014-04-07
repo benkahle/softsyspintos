@@ -13,9 +13,8 @@ typedef struct{
 typedef int sl_sort_func(SL_elem *a, SL_elem *b);
 
 SL_elem* sl_new_elem(void *data);
-void sl_list_push(SL_elem*, void*);
-void* sl_list_pop(SL_elem*);
-int sl_insert_sorted(SL_elem *start, void *insert, sl_sort_func *before);
+void* sl_list_pop(SL_list*);
+int sl_insert_sorted(SL_list *list, void *insert, sl_sort_func *before);
 
 
 #endif /* lib/kernel/easylist.h */

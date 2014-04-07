@@ -10,16 +10,10 @@ SL_elem* sl_new_elem(void *data){
   return new_elem;
 }
 
-void sl_list_push(SL_elem *start, void *data) {
-  SL_elem *new_elem = sl_new_elem(data);
-  new_elem->next = start;
-  start = new_elem;
-}
-
-void* sl_list_pop(SL_elem *start) {
-  SL_elem *first = start;
-  if (start->next) {
-    start = start->next;
+void* sl_list_pop(SL_list *list) {
+  SL_elem *first = list->start;
+  if (list->start->next) {
+    list->start = list->start->next;
   }
   void *data = first->data;
   free(first);
@@ -29,17 +23,17 @@ void* sl_list_pop(SL_elem *start) {
 /*
 Inserts an element into a SORTED list in the proper place by comparison function
 */
-int sl_insert_sorted(SL_elem *start, void *insert, sl_sort_func *before) {
+int sl_insert_sorted(SL_list *list, void *insert, sl_sort_func *before) {
   SL_elem *new_elem = sl_new_elem(insert);
   printf("<New list elem>\n");
   //if new element is first
-  if (start == NULL || before(new_elem, start)){
-    new_elem->next = start;
-    start = new_elem;
-    printf("<New elem added to start of list\n");
+  if (list->start == NULL || before(new_elem, list->start)){
+    new_elem->next = list->start;
+    list->start = new_elem;
+    printf("<New elem added to start of list: %p>\n", list->start);
     return 1;
   }
-  SL_elem *e = start;
+  SL_elem *e = list->start;
   SL_elem *last = e;
   for (; e != NULL; e = e->next) {
     if (before(new_elem, e)) {

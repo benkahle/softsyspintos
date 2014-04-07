@@ -32,7 +32,7 @@ static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
 
-SL_list waiting_list;
+static SL_list waiting_list;
 
 /*
 returns 1 if a is before b
@@ -120,7 +120,7 @@ timer_sleep (int64_t ticks)
   waiting->start = start;
   waiting->length = ticks; 
   printf("Made waiting thread\n");
-  sl_insert_sorted(waiting_list.start, waiting, (sl_sort_func *) waiting_sort);
+  sl_insert_sorted(&waiting_list, waiting, (sl_sort_func *) waiting_sort);
   printf("Saved waiting thread\n");
   printf("List start: %p\n", waiting_list.start);
   //while (timer_elapsed (start) < ticks) 
@@ -204,15 +204,13 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   Waiting_thread *waiting = (Waiting_thread *) waiting_list.start;
+  printf("<interrupt> start of list: %p\n", waiting_list.start);
   if (waiting) {
     printf("<Waiting Thread> %p\n", waiting);
-  }
-  if (waiting) {
-    printf("<Waiting Thread Found>\n");
     if (timer_elapsed(waiting->start) >= waiting->length) {
       sema_up(waiting->t->sleep_sema);
       intr_disable();
-      sl_list_pop(waiting_list.start);
+      sl_list_pop(&waiting_list);
       intr_enable();
       printf("--> <2> Waking Up: %p", waiting->t);
     } 
