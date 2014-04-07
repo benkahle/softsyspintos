@@ -16,7 +16,8 @@ void* sl_list_pop(SL_list *list) {
     list->start = list->start->next;
   }
   void *data = first->data;
-  free(first);
+  //free(first);
+  printf("POP3\n");
   return data;
 }
 

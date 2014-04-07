@@ -114,15 +114,19 @@ timer_sleep (int64_t ticks)
   ASSERT (intr_get_level () == INTR_ON);
   struct thread *t = thread_current();
   printf("--> <1> Sleeping: %p\n", t);
-  sema_down(t->sleep_sema);
+  // sema_down(t->sleep_sema);
+  intr_disable();
   Waiting_thread *waiting = malloc(sizeof(Waiting_thread));
   waiting->t = t;
   waiting->start = start;
   waiting->length = ticks; 
-  printf("Made waiting thread\n");
+  // printf("Made waiting thread\n");
   sl_insert_sorted(&waiting_list, waiting, (sl_sort_func *) waiting_sort);
-  printf("Saved waiting thread\n");
+  // printf("Saved waiting thread\n");
   printf("List start: %p\n", waiting_list.start);
+  printf("List start thread: %p\n", ((Waiting_thread *) waiting_list.start->data)->t);
+  thread_block();
+  intr_enable();
   //while (timer_elapsed (start) < ticks) 
   //  thread_yield ();
 
@@ -203,17 +207,19 @@ static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
-  Waiting_thread *waiting = (Waiting_thread *) waiting_list.start;
-  printf("<interrupt> start of list: %p\n", waiting_list.start);
+  SL_elem *waiting = (SL_elem *) waiting_list.start;
+  //printf("<interrupt> start of list: %p\n", waiting_list.start);
   if (waiting) {
-    printf("<Waiting Thread> %p\n", waiting);
-    if (timer_elapsed(waiting->start) >= waiting->length) {
-      sema_up(waiting->t->sleep_sema);
-      intr_disable();
-      sl_list_pop(&waiting_list);
-      intr_enable();
-      printf("--> <2> Waking Up: %p", waiting->t);
+    //intr_disable();
+    printf("<Waiting List Elem> %p\n", waiting);
+    if (timer_elapsed(((Waiting_thread *) waiting->data)->start) >= ((Waiting_thread *) waiting->data)->length) {
+      printf("Thread to wake: %p\n", ((Waiting_thread *) waiting->data)->t);
+      thread_unblock(((Waiting_thread *) waiting->data)->t);
+      printf("1\n");
+      SL_elem *ret = (SL_elem *) sl_list_pop(&waiting_list);
+      printf("Thread to Remove: %p\n", ((Waiting_thread *) ret)->t);
     } 
+    //intr_enable();
   }
   thread_tick ();
 }
