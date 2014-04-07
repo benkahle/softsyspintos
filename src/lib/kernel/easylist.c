@@ -12,12 +12,13 @@ SL_elem* sl_new_elem(void *data){
 
 void* sl_list_pop(SL_list *list) {
   SL_elem *first = list->start;
+  void *data = first->data;
   if (list->start->next) {
     list->start = list->start->next;
+  } else {
+    list->start = NULL;
   }
-  void *data = first->data;
   //free(first);
-  printf("POP3\n");
   return data;
 }
 

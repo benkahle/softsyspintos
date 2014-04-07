@@ -218,6 +218,7 @@ timer_interrupt (struct intr_frame *args UNUSED)
       printf("1\n");
       SL_elem *ret = (SL_elem *) sl_list_pop(&waiting_list);
       printf("Thread to Remove: %p\n", ((Waiting_thread *) ret)->t);
+      printf("List Points to: %p\n", waiting_list.start);
     } 
     //intr_enable();
   }
